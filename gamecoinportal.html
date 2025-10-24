@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameCoin Portal - Ultimate Gaming Experience</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/atikutso605/gcp@main/style.css">
+
+                                        <script type='text/javascript' src='//pl27890817.effectivegatecpm.com/c5/e9/e6/c5e9e68c1bb2f90d63a40f4275d361bc.js'></script>
+
+</head>
+<body>
+    <!-- Game popup -->
+    <div id="gamePopup" class="popup-overlay">
+        <div class="popup-content" style="width: 100%; height: 100%; max-width: 100%; max-height: 100%; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <button class="popup-close" onclick="closeGamePopup()">×</button>
+            <canvas id="gameCanvas" class="game-canvas" width="350" height="350"></canvas>
+            <div class="game-controls" id="gameControls">
+                <button class="control-btn" id="upBtn" ontouchstart="">
+                    <!-- Added arrow up icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/2985/2985150.png" alt="Up" style="width:20px;height:20px;">
+                </button>
+                <button class="control-btn" id="leftBtn" ontouchstart="">
+                    <!-- Added arrow left icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/2985/2985179.png" alt="Left" style="width:20px;height:20px;">
+                </button>
+                <button class="control-btn" id="downBtn" ontouchstart="">
+                    <!-- Added arrow down icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/2985/2985161.png" alt="Down" style="width:20px;height:20px;">
+                </button>
+                <button class="control-btn" id="rightBtn" ontouchstart="">
+                    <!-- Added arrow right icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/2985/2985088.png" alt="Right" style="width:20px;height:20px;">
+                </button>
+                <button class="control-btn" onclick="pauseGame()" ontouchstart="">
+                    <!-- Added pause icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" alt="Pause" style="width:20px;height:20px;">
+                </button>
+                <button class="control-btn" onclick="restartGame()" ontouchstart="">
+                    <!-- Added restart icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/2991/2991110.png" alt="Restart" style="width:20px;height:20px;">
+                </button>
+            </div>
+        </div>
+    </div>
+
+                                        
+                                        <script type="text/javascript">
+    atOptions = {
+        'key' : 'd46583ea8edeaba09ecd76e45e563660',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+    };
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/d46583ea8edeaba09ecd76e45e563660/invoke.js"></script>
+
+                                        
+                                        
+    <!-- Updated settings popup with multi-step flow -->
+    <div id="settingsPopup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup('settingsPopup')">×</button>
+            <h3>Cash Out</h3>
+            <div id="settingsStep1">
+                <div class="device-input-section">
+                    <div class="input-group">
+                        <label>Acc ID :</label>
+                        <input type="text" id="deviceExample" value="1ECC306C-103.133.202.151-1920x1080" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>ID Secret:</label>
+                        <input type="text" id="deviceId" placeholder="Enter your device ID">
+                    </div>
+                    <div class="input-group">
+                        <label>Coin Amount to Add:</label>
+                        <input type="number" id="coinAmount" placeholder="Enter coin amount" min="1" max="1000">
+                    </div>
+                    <button class="submit-btn" onclick="goToReview()">Next</button>
+                </div>
+            </div>
+            <div id="settingsStep2" style="display:none;">
+                <h4>Review Your Data</h4>
+                <p><strong>User ID:</strong> <span id="reviewUserId"></span></p>
+                <p><strong>Device ID Example:</strong> <span id="reviewDeviceExample"></span></p>
+                <p><strong>Your Device ID:</strong> <span id="reviewDeviceId"></span></p>
+                <p><strong>Coin Amount:</strong> <span id="reviewCoinAmount"></span></p>
+                <button class="submit-btn" onclick="submitDeviceData()">Submit</button>
+                <button class="submit-btn" style="background: gray;" onclick="goBackToInput()">Back</button>
+            </div>
+            <div style="margin-top: 15px; font-size: 12px;">
+                <p><strong>Current Device Info:</strong></p>
+                <p id="currentDeviceInfo">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Enhanced header with device info display -->
+        <header class="header">
+            <div class="logo">
+                <!-- Replaced Font Awesome with Flaticon gaming controller -->
+                <img src="https://cdn-icons-png.flaticon.com/512/3176/3176363.png" alt="Gaming" class="flaticon">
+                <span>GameCoin Portal</span>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <img src="" alt="User Avatar" id="userAvatar">
+                </div>
+                <div class="user-details">
+                    <div class="user-id">
+                        <!-- Added user ID icon from Flaticon -->
+                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="ID" class="activity-icon">
+                        ID: <span id="userId">Loading...</span>
+                    </div>
+                    <div class="coin-balance">
+                        <!-- Replaced emoji with Flaticon coin icon -->
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png" alt="Coins" class="activity-icon">
+                        <span id="coinBalance">0</span> coins
+                    </div>
+                    <div class="device-info">
+                        <!-- Added device icon from Flaticon -->
+                        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Device" class="activity-icon">
+                        <span id="deviceDisplay">Device</span>
+                    </div>
+                    <div class="sheet-info">
+                        <small>
+                            <!-- Added spreadsheet icon from Flaticon -->
+                            <img src="https://cdn-icons-png.flaticon.com/512/888/888034.png" alt="Sheet" class="activity-icon">
+                            Sheet: <span id="sheetCoins">0</span> coins <span id="sheetStatus">Connecting...</span>
+                        </small>
+                    </div>
+                    <button onclick="openPopup('settingsPopup')" style="background:none;border:none;color:white;cursor:pointer;">
+                        <!-- Replaced emoji with Flaticon settings gear -->
+                        <img src="https://cdn-icons-png.flaticon.com/512/2040/2040504.png" alt="Settings" style="width:20px;height:20px;">
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Questions section -->
+            <section class="section">
+                <h2>
+                    <!-- Added question mark icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/189/189665.png" alt="Questions" class="header-icon">
+                    Quick Questions - Earn Coins!
+                </h2>
+                <div class="quiz-container">
+                    <div class="question" id="currentQuestion">
+                        Ready to earn coins? Answer yes or no questions!
+                    </div>
+                    <div class="quiz-buttons">
+                        <button class="quiz-btn" onclick="answerQuestion(true)" ontouchstart="">
+                            <!-- Added checkmark icon from Flaticon -->
+                            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Yes" style="width:16px;height:16px;margin-right:5px;">
+                            Yes
+                        </button>
+                        <button class="quiz-btn" onclick="answerQuestion(false)" ontouchstart="">
+                            <!-- Added X mark icon from Flaticon -->
+                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" alt="No" style="width:16px;height:16px;margin-right:5px;">
+                            No
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced games section with Flaticon icons -->
+            <section class="section games-section">
+                <h2>
+                    <!-- Added gaming joystick icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/686/686589.png" alt="Games" class="header-icon">
+                    Play Games - Earn More Coins!
+                </h2>
+                <div class="games-grid">
+                                      <div class="game-card" onclick="startGame('snake')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/nsM6LGh4/Chat-GPT-Image-Sep-13-2025-10-44-32-AM.png" alt="Snake" class="game-icon">
+                        <h3>Snake Game</h3>
+                        <p>Classic snake game! Eat food, grow longer, avoid walls.</p>
+                        <small>+35 coins per game</small>
+                    </div>
+                    <div class="game-card" onclick="startGame('snake')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/7JGqXpZx/20251020-2013-Ludo-Game-Joy-simple-compose-01k80zcd8yergab635rpetd2vw-1.png" alt="Snake" class="game-icon">
+                        <h3>Ludo Game</h3>
+                        <p>Classic Ludo fun! Roll, move, and beat opponents to win the crown.</p>
+                        <small>+35 coins per game</small>
+                    </div>
+                                        
+                                        
+                                        <script async="async" data-cfasync="false" src="//pl27890823.effectivegatecpm.com/d4ac60e0d8467735633c341319d38b83/invoke.js"></script>
+<div id="container-d4ac60e0d8467735633c341319d38b83"></div>
+                                        
+                                        
+                    <div class="game-card" onclick="startGame('scratch')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/5X8rWKH8/Chat-GPT-Image-Sep-13-2025-10-48-29-AM.png" alt="Scratch" class="game-icon">
+                        <h3>Scratch & Win</h3>
+                        <p>Scratch cards to reveal hidden prizes and coins!</p>
+                        <small>+3-15 coins per card</small>
+                    </div>
+                    <div class="game-card" onclick="startGame('slot')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/xn8X1h5/20250913-1049-Lucky-Slots-Casino-Ad-remix-01k50pedfce26tzdgrr2h8xa6b.png" alt="Slots" class="game-icon">
+                        <h3>Lucky Slots</h3>
+                        <p>Spin the reels and win big! Match symbols for coins.</p>
+                        <small>+2-20 coins per spin</small>
+                    </div>
+                    <div class="game-card" onclick="startGame('memory')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/yn7wSw5B/20250913-1051-Korean-Beauty-Game-Ad-simple-compose-01k50pjdgde3w95hm6jn5wgx8q.png" alt="Memory" class="game-icon">
+                        <h3>Memory Test</h3>
+                        <p>Test your memory with card matching challenges.</p>
+                        <small>+4 coins per level</small>
+                    </div>
+                    <div class="game-card" onclick="startGame('clicker')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/8n7HQvr0/20250913-1053-Korean-Beauty-Coin-Clicker-simple-compose-01k50pp1kffdbsjpvqma2v1bx2.png" alt="Clicker" class="game-icon">
+                        <h3>Coin Clicker</h3>
+                        <p>Click as fast as you can to earn bonus coins!</p>
+                        <small>+1 coin per click</small>
+                    </div>
+                    <div class="game-card" onclick="startGame('puzzle')" ontouchstart="">
+                        <img src="https://i.ibb.co.com/Y7bbvRz1/20250913-1055-Korean-Beauty-Puzzle-Game-simple-compose-01k50pt34dek68pwdhmz12x32r.png" alt="Puzzle" class="game-icon">
+                        <h3>Number Puzzle</h3>
+                        <p>Solve math puzzles and brain teasers for rewards.</p>
+                        <small>+6 coins per puzzle</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced activity feed with Flaticon icons -->
+            <section class="section">
+                <h2>
+                    <!-- Added users/community icon from Flaticon -->
+                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="Players" class="header-icon">
+                    Live Player Activity
+                </h2>
+                <div class="activity-feed" id="activityList">
+                    <!-- Dynamic activity items will be added here with icons -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdn.jsdelivr.net/gh/atikutso605/gcp@main/script.js"></script>
+
+                                     <script type='text/javascript' src='//pl27890826.effectivegatecpm.com/94/3f/91/943f916c0b0466e7bc99ecbd6bd69047.js'></script>
+
+</body>
+</html>
