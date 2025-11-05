@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ludo Snake — Classic Snake with a Ludo Flair</title>
+  <style>
+    :root{--bg:#0b1221;--panel:#0f1724;--text:#e6eef8}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071028 0%,#071019 100%);color:var(--text)}
+    .wrap{display:grid;grid-template-columns:640px 260px;gap:20px;padding:20px}
+    canvas{background:var(--panel);border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,.7)}
+    .panel{width:260px;background:linear-gradient(180deg,#071226,#071018);padding:18px;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+    h1{font-size:18px;margin:0 0 8px}
+    .meta{font-size:13px;color:#9fb0d8;margin-bottom:12px}
+    .score{font-size:32px;font-weight:700;text-align:center;margin:16px 0}
+    button{width:100%;padding:10px;border-radius:8px;border:0;background:#1f6feb;color:white;font-weight:600;cursor:pointer}
+    .hint{font-size:13px;color:#9fb0d8;margin-top:10px}
+    .small{font-size:12px;color:#89a2d6;margin-top:8px}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .controls button{flex:1;background:#10223e}
+    .footer{font-size:12px;color:#7f98c1;margin-top:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="600" height="600" role="img" aria-label="Ludo themed snake game"></canvas>
+    <div class="panel">
+      <h1>Ludo Snake — Classic Snake!</h1>
+      <div class="meta">Eat food, grow longer, avoid walls. Ludo-colors, mobile-friendly, and keyboard controls.</div>
+
+      <div class="score" id="score">Score: 0</div>
+
+      <button id="startBtn">Start Game</button>
+      <div class="controls">
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <div class="hint">Controls: Arrow keys or WASD. On mobile: swipe to move. Space to pause.</div>
+      <div class="small">Gameplay: Each food increases length by 1. Hitting walls or yourself ends the game. Speed increases slightly every 5 food.</div>
+      <div class="footer">Tip: Try collecting differently colored tokens for extra points!</div>
+    </div>
+  </div>
+
+<script>
+// Ludo Snake — Single-file HTML/JS
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const WIDTH = canvas.width; const HEIGHT = canvas.height;
+  const TILE = 20; // grid size
+  const COLS = WIDTH / TILE; const ROWS = HEIGHT / TILE;
+
+  const LUDO_COLORS = ['#ef4444','#f59e0b','#10b981','#3b82f6']; // red, yellow, green, blue
+
+  let snake = [];
+  let dir = {x:1,y:0};
+  let nextDir = null;
+  let food = null;
+  let score = 0;
+  let running = false;
+  let paused = false;
+  let baseSpeed = 8; // moves per second
+  let speed = baseSpeed;
+  let lastTime = 0;
+  let accumulator = 0;
+
+  function reset(){
+    snake = [ {x:Math.floor(COLS/2), y:Math.floor(ROWS/2)},
+              {x:Math.floor(COLS/2)-1, y:Math.floor(ROWS/2)},
+              {x:Math.floor(COLS/2)-2, y:Math.floor(ROWS/2)} ];
+    dir = {x:1,y:0}; nextDir = null;
+    score = 0; speed = baseSpeed; running = false; paused = false;
+    placeFood();
+    updateScore();
+    draw();
+  }
+
+  function placeFood(){
+    // place food not on snake and not inside corner "home" areas we'll consider as decorative
+    while(true){
+      const f = {x: randInt(1, COLS-2), y: randInt(1, ROWS-2)};
+      if(!snake.some(s => s.x===f.x && s.y===f.y)) { food = f; food.color = LUDO_COLORS[randInt(0, LUDO_COLORS.length-1)]; break; }
+    }
+  }
+
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a))+a; }
+
+  function step(){
+    if(!running || paused) return;
+    if(nextDir){
+      // prevent reversing
+      if(!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir;
+      nextDir = null;
+    }
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+    // check wall collision
+    if(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS){
+      gameOver(); return;
+    }
+    // check self collision
+    if(snake.some(seg => seg.x===head.x && seg.y===head.y)) { gameOver(); return; }
+
+    snake.unshift(head);
+
+    // eating food?
+    if(head.x===food.x && head.y===food.y){
+      score += (food.color === '#3b82f6') ? 2 : 1; // blue token gives extra point (just a fun rule)
+      if(score % 5 === 0) speed = Math.min(20, baseSpeed + Math.floor(score/5));
+      placeFood();
+      updateScore();
+    } else {
+      snake.pop();
+    }
+  }
+
+  function gameOver(){
+    running = false;
+    paused = false;
+    draw();
+    setTimeout(()=>{
+      if(confirm("Game Over — Score: " + score + "\nPlay again?")) { startGame(); }
+    }, 50);
+  }
+
+  function updateScore(){ scoreEl.textContent = 'Score: ' + score; }
+
+  function drawGrid(){
+    // draw subtle grid
+    ctx.fillStyle = '#071018';
+    ctx.fillRect(0,0,WIDTH,HEIGHT);
+    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+    ctx.lineWidth = 1;
+    for(let x=0;x<=WIDTH;x+=TILE){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,HEIGHT); ctx.stroke(); }
+    for(let y=0;y<=HEIGHT;y+=TILE){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(WIDTH,y); ctx.stroke(); }
+  }
+
+  function drawLudoCorners(){
+    // draw 4 colored "home" corners like a Ludo board for flair
+    const homeSize = 6 * TILE;
+    ctx.globalAlpha = 0.12;
+    // top-left (red)
+    ctx.fillStyle = LUDO_COLORS[0]; ctx.fillRect(0,0,homeSize,homeSize);
+    // top-right (yellow)
+    ctx.fillStyle = LUDO_COLORS[1]; ctx.fillRect(WIDTH-homeSize,0,homeSize,homeSize);
+    // bottom-left (green)
+    ctx.fillStyle = LUDO_COLORS[2]; ctx.fillRect(0,HEIGHT-homeSize,homeSize,homeSize);
+    // bottom-right (blue)
+    ctx.fillStyle = LUDO_COLORS[3]; ctx.fillRect(WIDTH-homeSize,HEIGHT-homeSize,homeSize,homeSize);
+    ctx.globalAlpha = 1;
+  }
+
+  function draw(){
+    drawGrid();
+    drawLudoCorners();
+
+    // draw food as circle token with small shine
+    if(food){
+      const fx = food.x * TILE + TILE/2, fy = food.y * TILE + TILE/2;
+      const r = TILE*0.45;
+      // token base
+      ctx.beginPath(); ctx.arc(fx,fy,r,0,Math.PI*2); ctx.fillStyle = food.color; ctx.fill();
+      // inner shine
+      ctx.beginPath(); ctx.arc(fx - r*0.25, fy - r*0.25, r*0.35, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
+      // ring
+      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.stroke();
+    }
+
+    // draw snake
+    for(let i=snake.length-1;i>=0;i--){
+      const part = snake[i];
+      const x = part.x * TILE, y = part.y * TILE;
+      // head different style
+      if(i===0){
+        // gradient head
+        const g = ctx.createLinearGradient(x,y,x+TILE,y+TILE);
+        g.addColorStop(0,'#a7f3d0'); g.addColorStop(1,'#059669');
+        ctx.fillStyle = g;
+        roundRect(ctx,x+1,y+1,TILE-2,TILE-2,4,true,false);
+        // eye
+        ctx.fillStyle = '#062b1b'; ctx.beginPath(); ctx.arc(x+TILE*0.65,y+TILE*0.35,TILE*0.1,0,Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillStyle = 'rgba(16,129,87,' + (0.9 - i*0.02) + ')';
+        roundRect(ctx,x+1,y+1,TILE-2,TILE-2,3,true,false);
+      }
+    }
+
+    // wall border
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 4;
+    ctx.strokeRect(0.5,0.5,WIDTH-1,HEIGHT-1);
+
+    if(!running){
+      // overlay
+      ctx.fillStyle = 'rgba(2,6,12,0.5)'; ctx.fillRect(0,0,WIDTH,HEIGHT);
+      ctx.fillStyle = '#dbeafe'; ctx.font = 'bold 26px Inter, Arial'; ctx.textAlign='center';
+      ctx.fillText(running ? 'Paused' : 'Press Start', WIDTH/2, HEIGHT/2 - 10);
+      ctx.font = '14px Inter, Arial'; ctx.fillText('Use arrows / WASD (swipe on mobile)', WIDTH/2, HEIGHT/2 + 18);
+    }
+  }
+
+  // rounded rectangle helper
+  function roundRect(ctx,x,y,w,h,r,fill,stroke){
+    if(typeof r==='undefined') r=5; if(typeof r==='number') r={tl:r,tr:r,br:r,bl:r};
+    ctx.beginPath(); ctx.moveTo(x + r.tl, y);
+    ctx.lineTo(x + w - r.tr, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
+    ctx.lineTo(x + w, y + h - r.br); ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
+    ctx.lineTo(x + r.bl, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
+    ctx.lineTo(x, y + r.tl); ctx.quadraticCurveTo(x, y, x + r.tl, y);
+    ctx.closePath(); if(fill) ctx.fill(); if(stroke) ctx.stroke();
+  }
+
+  // game loop with variable speed control
+  function loop(ts){
+    if(!lastTime) lastTime = ts; const delta = (ts - lastTime) / 1000; lastTime = ts;
+    accumulator += delta;
+    const interval = 1 / speed;
+    while(accumulator >= interval){ step(); accumulator -= interval; }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // input
+  window.addEventListener('keydown', e => {
+    if(e.key === ' '){ paused = !paused; running = running && !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; return; }
+    const key = e.key.toLowerCase();
+    if(['arrowup','w'].includes(key) || key==='w'){ nextDir = {x:0,y:-1}; }
+    if(['arrowdown','s'].includes(key) || key==='s'){ nextDir = {x:0,y:1}; }
+    if(['arrowleft','a'].includes(key) || key==='a'){ nextDir = {x:-1,y:0}; }
+    if(['arrowright','d'].includes(key) || key==='d'){ nextDir = {x:1,y:0}; }
+    // if not running, start on first key
+    if(!running && !paused){ startGame(); }
+  });
+
+  // simple swipe detection for mobile
+  let touchStart = null;
+  canvas.addEventListener('touchstart', e => { const t = e.changedTouches[0]; touchStart = {x:t.clientX, y:t.clientY}; e.preventDefault(); });
+  canvas.addEventListener('touchend', e => {
+    if(!touchStart) return; const t = e.changedTouches[0]; const dx = t.clientX - touchStart.x, dy = t.clientY - touchStart.y;
+    if(Math.hypot(dx,dy) < 20) { touchStart = null; return; }
+    if(Math.abs(dx) > Math.abs(dy)) nextDir = {x: dx>0 ? 1 : -1, y:0}; else nextDir = {x:0,y: dy>0 ? 1 : -1};
+    touchStart = null; if(!running) startGame();
+  });
+
+  // buttons
+  startBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', () => { if(!running) return; paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; });
+  resetBtn.addEventListener('click', ()=>{ if(confirm('Reset the game?')) reset(); });
+
+  function startGame(){ if(running){ paused=false; return; } running = true; paused=false; lastTime = 0; accumulator = 0; score=0; updateScore(); snake = snake.length ? snake : snake = [ {x:Math.floor(COLS/2), y:Math.floor(ROWS/2)} ]; placeFood(); requestAnimationFrame(loop); }
+
+  // initialize
+  reset();
+
+})();
+</script>
+</body>
+</html>
